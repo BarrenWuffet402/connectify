@@ -1,5 +1,6 @@
 require('dotenv').config();
 
+const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { fetchConnections } = require('./apify');
@@ -92,6 +93,12 @@ app.post('/api/query', async (req, res) => {
       error: 'Unable to process query right now. Please try again.',
     });
   }
+});
+
+// Serve the built frontend for single-service deployment (e.g., Render).
+app.use(express.static(path.join(__dirname, 'dist')));
+app.get('*', (_req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
 async function start() {
