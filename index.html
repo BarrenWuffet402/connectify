@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Connectify Dashboard Mockup</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Source+Sans+3:wght@400;600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="bg-glow bg-glow-left"></div>
+    <div class="bg-glow bg-glow-right"></div>
+
+    <main class="dashboard">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Connectify</p>
+          <h1>Social Media Command Center</h1>
+        </div>
+        <button class="ghost-btn">New Campaign</button>
+      </header>
+
+      <section class="chatbot">
+        <div class="chatbot-header">
+          <h2>AI Chat Assistant</h2>
+          <span class="status-dot">Live</span>
+        </div>
+
+        <div class="chat-window">
+          <article class="bubble ai">
+            <p>Hey team, engagement dropped 8% on LinkedIn this week. Want a quick recovery plan?</p>
+          </article>
+          <article class="bubble user">
+            <p>Yes, suggest 3 post ideas and best times to publish.</p>
+          </article>
+          <article class="bubble ai">
+            <p>On it. Drafting campaign concepts from your top-performing topics now.</p>
+          </article>
+        </div>
+
+        <form class="chat-input" action="#">
+          <input type="text" placeholder="Ask your assistant about content, analytics, or scheduling..." />
+          <button type="button">Send</button>
+        </form>
+      </section>
+
+      <section class="grid">
+        <article class="card metric">
+          <h3>Total Reach</h3>
+          <p class="value">248.3K</p>
+          <p class="trend up">+12.4% from last week</p>
+        </article>
+
+        <article class="card metric">
+          <h3>Engagement Rate</h3>
+          <p class="value">6.8%</p>
+          <p class="trend down">-1.1% from last week</p>
+        </article>
+
+        <article class="card metric">
+          <h3>Scheduled Posts</h3>
+          <p class="value">19</p>
+          <p class="trend">Across 4 platforms</p>
+        </article>
+
+        <article class="card wide">
+          <h3>Platform Performance</h3>
+          <ul class="bars">
+            <li><span>Instagram</span><div><i style="width: 84%"></i></div></li>
+            <li><span>TikTok</span><div><i style="width: 72%"></i></div></li>
+            <li><span>LinkedIn</span><div><i style="width: 58%"></i></div></li>
+            <li><span>X / Twitter</span><div><i style="width: 66%"></i></div></li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>Upcoming Queue</h3>
+          <ul class="list">
+            <li>Product teaser reel <span>Today 2:00 PM</span></li>
+            <li>Founder insight thread <span>Today 5:30 PM</span></li>
+            <li>Customer spotlight post <span>Tomorrow 11:00 AM</span></li>
+          </ul>
+        </article>
+
+        <article class="card">
+          <h3>Top Mentions</h3>
+          <ul class="list">
+            <li>@techwaves: "Loved the new onboarding" <span>423 likes</span></li>
+            <li>@creatorslab: "Clean workflow UX" <span>311 likes</span></li>
+            <li>@startupdaily: "AI assistant is slick" <span>278 likes</span></li>
+          </ul>
+        </article>
+      </section>
+    </main>
+  </body>
+</html>
