@@ -4,13 +4,19 @@ const path = require('path');
 const express = require('express');
 const cors = require('cors');
 const { fetchConnections } = require('./apify');
-const { scoreConnections, suggestActions } = require('./agent');
+const {
+  scoreConnections,
+  suggestActions,
+  updateUserProfile,
+  filterByProfile,
+} = require('./agent');
 const {
   ensureRedisConnected,
   saveConnection,
   getAllConnections,
   saveQueryContext,
   getQueryContext,
+  getUserProfile,
 } = require('./redis');
 
 const app = express();
@@ -57,9 +63,13 @@ app.post('/api/query', async (req, res) => {
 
     const connections = await getAllConnections();
     const scoredConnections = await scoreConnections(query, connections);
+    const rawTopResults = scoredConnections.slice(0, 15);
+    const profile = await getUserProfile(sessionId);
+    const profileFiltered = await filterByProfile(rawTopResults, profile);
+    const topCandidates = (profileFiltered || rawTopResults).slice(0, 5);
 
     const topResults = await Promise.all(
-      scoredConnections.slice(0, 5).map(async (connection) => {
+      topCandidates.map(async (connection) => {
         let actions = [];
 
         try {
@@ -76,6 +86,10 @@ app.post('/api/query', async (req, res) => {
           relevanceScore: connection.relevanceScore,
           reason: connection.reason,
           suggestedActions: actions,
+          profileMatchReason:
+            typeof connection.profileMatchReason === 'string'
+              ? connection.profileMatchReason
+              : null,
         };
       })
     );
@@ -86,11 +100,32 @@ app.post('/api/query', async (req, res) => {
       createdAt: new Date().toISOString(),
     });
 
-    return res.json({ results: topResults });
+    res.json({ results: topResults });
+
+    setImmediate(() => {
+      updateUserProfile(sessionId, query, topCandidates).catch(() => {
+        // Ignore profile update failures: request is already fulfilled.
+      });
+    });
+
+    return;
   } catch (error) {
     console.error('Query handling failed:', error);
     return res.status(500).json({
       error: 'Unable to process query right now. Please try again.',
+    });
+  }
+});
+
+app.get('/api/profile/:sessionId', async (req, res) => {
+  try {
+    const { sessionId } = req.params;
+    const profile = await getUserProfile(sessionId);
+    return res.json({ profile });
+  } catch (error) {
+    console.error('Profile fetch failed:', error);
+    return res.status(500).json({
+      error: 'Unable to load profile right now.',
     });
   }
 });

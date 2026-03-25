@@ -22,7 +22,9 @@
   },
   "homepage": "https://github.com/BarrenWuffet402/connectify#readme",
   "dependencies": {
+    "@upstash/redis": "^1.37.0",
     "apify": "^3.7.0",
+    "apify-client": "^2.22.3",
     "civic": "^1.0.0",
     "cors": "^2.8.6",
     "dotenv": "^17.3.1",
