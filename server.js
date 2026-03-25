@@ -97,7 +97,7 @@ app.post('/api/query', async (req, res) => {
 
 // Serve the built frontend for single-service deployment (e.g., Render).
 app.use(express.static(path.join(__dirname, 'dist')));
-app.get('*', (_req, res) => {
+app.get('/{*path}', (_req, res) => {
   res.sendFile(path.join(__dirname, 'dist', 'index.html'));
 });
 
