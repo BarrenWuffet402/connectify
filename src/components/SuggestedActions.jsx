@@ -2,13 +2,15 @@ import React from 'react';
 import { suggestedActionItems } from '../data/placeholders';
 
 // Action recommendations stacked in the right-side card.
-export default function SuggestedActions() {
+export default function SuggestedActions({ actions }) {
+  const source = Array.isArray(actions) && actions.length > 0 ? actions : suggestedActionItems;
+
   return (
     <section className="rounded-2xl border border-zinc-200 bg-white p-5">
       <h2 className="text-lg font-semibold text-zinc-900">Suggested actions</h2>
 
       <div className="mt-4 space-y-3">
-        {suggestedActionItems.map((action) => (
+        {source.map((action) => (
           <article
             key={action.id}
             className="flex items-center justify-between gap-3 rounded-xl border border-zinc-200 bg-zinc-50 px-3.5 py-3"

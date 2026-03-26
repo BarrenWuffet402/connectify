@@ -69,7 +69,7 @@ export const initialChatMessages = [
   {
     id: 'm1',
     role: 'assistant',
-    text: "Hi! I've indexed your 1,847 connections. Ask me anything - introductions, warm paths, or actions.",
+    text: "Hi! I've indexed your network. Ask me anything - introductions, warm paths, or actions.",
   },
   {
     id: 'm2',
@@ -79,7 +79,7 @@ export const initialChatMessages = [
   {
     id: 'm3',
     role: 'assistant',
-    text: 'Found 34 contacts in AI + SF. Top matches: Leila Park (OpenAI), James Tao (Anthropic), Nina Solis (Cohere). Want intros or a shortlist?',
+    text: 'Found multiple AI + SF contacts. Want intros or a shortlist?',
   },
 ];
 

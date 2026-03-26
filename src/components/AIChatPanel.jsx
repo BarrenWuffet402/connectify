@@ -1,5 +1,4 @@
 import React, { useMemo, useState } from 'react';
-import { initialChatMessages } from '../data/placeholders';
 
 function platformBadgeClass(platform) {
   if (platform === 'LI') {
@@ -17,12 +16,42 @@ function formatResultSummary(results) {
   return `Found ${results.length} relevant contacts. Top matches: ${topMatches}. Want intros or a shortlist?`;
 }
 
+function toSentence(text) {
+  if (typeof text !== 'string') {
+    return '';
+  }
+  const trimmed = text.trim();
+  if (!trimmed) {
+    return '';
+  }
+  if (/[.!?]$/.test(trimmed)) {
+    return trimmed;
+  }
+  return `${trimmed}.`;
+}
+
+function initialsFromName(name) {
+  if (typeof name !== 'string') {
+    return 'NA';
+  }
+  const parts = name
+    .trim()
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2);
+  if (parts.length === 0) {
+    return 'NA';
+  }
+  return parts.map((part) => part[0].toUpperCase()).join('');
+}
+
 // Chat panel with backend call to /api/query and optimistic message flow.
 export default function AIChatPanel({ sessionId }) {
-  const [messages, setMessages] = useState(initialChatMessages);
+  const [messages, setMessages] = useState([]);
   const [query, setQuery] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState('');
+  const [imageFallbackState, setImageFallbackState] = useState({});
 
   const canSend = useMemo(() => query.trim().length > 0 && !isLoading, [query, isLoading]);
 
@@ -63,6 +92,7 @@ export default function AIChatPanel({ sessionId }) {
         id: `a-${Date.now()}`,
         role: 'assistant',
         text: summary,
+        query: trimmed,
         results,
       };
 
@@ -101,44 +131,81 @@ export default function AIChatPanel({ sessionId }) {
 
             {Array.isArray(message.results) && message.results.length > 0 && (
               <div className="mt-3 space-y-2">
-                {message.results.slice(0, 3).map((item) => (
-                  <div key={`${message.id}-${item.name}`} className="rounded-xl border border-zinc-200 bg-white p-2.5">
-                    <div className="flex items-center justify-between gap-2">
-                      <div>
-                        <p className="font-medium text-zinc-900">{item.name}</p>
-                        <p className="text-xs text-zinc-500">
-                          {item.role} · {item.company}
+                {message.results.slice(0, 3).map((item) => {
+                  const imageKey = `${message.id}-${item.id || item.name}`;
+                  const primaryAvatar = typeof item.profileImageUrl === 'string' ? item.profileImageUrl : '';
+                  const fallbackAvatar =
+                    typeof item.username === 'string' && item.username.trim().length > 0
+                      ? `https://unavatar.io/instagram/${encodeURIComponent(item.username.trim())}`
+                      : '';
+                  const state = imageFallbackState[imageKey];
+                  const avatarSrc =
+                    state === 'fallback' ? fallbackAvatar : primaryAvatar || fallbackAvatar || '';
+                  const showImage = Boolean(avatarSrc) && state !== 'none';
+
+                  return (
+                    <div key={`${message.id}-${item.name}`} className="rounded-xl border border-zinc-200 bg-white p-2.5">
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2">
+                          {showImage ? (
+                            <img
+                              src={avatarSrc}
+                              alt={item.name || 'Profile'}
+                              className="h-9 w-9 rounded-full object-cover ring-1 ring-zinc-200"
+                              referrerPolicy="no-referrer"
+                              onError={() => {
+                                setImageFallbackState((prev) => {
+                                  const current = prev[imageKey];
+                                  if (current === 'fallback') {
+                                    return { ...prev, [imageKey]: 'none' };
+                                  }
+
+                                  if (primaryAvatar && fallbackAvatar) {
+                                    return { ...prev, [imageKey]: 'fallback' };
+                                  }
+
+                                  return { ...prev, [imageKey]: 'none' };
+                                });
+                              }}
+                            />
+                          ) : (
+                            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-zinc-200 text-xs font-semibold text-zinc-700">
+                              {initialsFromName(item.name)}
+                            </div>
+                          )}
+                          <div>
+                            <p className="font-medium text-zinc-900">{item.name}</p>
+                            <p className="text-xs text-zinc-500">
+                              {item.role} · {item.company}
+                            </p>
+                          </div>
+                        </div>
+                        <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">
+                          {item.relevanceScore ?? '--'}
+                        </span>
+                      </div>
+
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        {(item.platforms || []).map((platform) => (
+                          <span
+                            key={`${message.id}-${item.name}-${platform}`}
+                            className={`rounded-full px-2 py-0.5 text-xs font-semibold ${platformBadgeClass(platform)}`}
+                          >
+                            {platform}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="mt-2 space-y-1.5 text-xs text-zinc-600">
+                        <p>{toSentence(item.reason) || 'Relevant based on role, company, and platform overlap.'}</p>
+                        <p>
+                          {toSentence(item.profileMatchReason) ||
+                            `Relevant to your query "${message.query || 'network search'}".`}
                         </p>
                       </div>
-                      <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs font-medium text-zinc-700">
-                        {item.relevanceScore ?? '--'}
-                      </span>
                     </div>
-
-                    <div className="mt-2 flex flex-wrap gap-1.5">
-                      {(item.platforms || []).map((platform) => (
-                        <span
-                          key={`${message.id}-${item.name}-${platform}`}
-                          className={`rounded-full px-2 py-0.5 text-xs font-semibold ${platformBadgeClass(platform)}`}
-                        >
-                          {platform}
-                        </span>
-                      ))}
-                    </div>
-
-                    <div className="mt-2 flex flex-wrap gap-2">
-                      {(item.suggestedActions || ['Draft Intro', 'Follow Up']).slice(0, 2).map((action) => (
-                        <button
-                          key={`${message.id}-${item.name}-${action}`}
-                          type="button"
-                          className="rounded-full border border-zinc-300 px-2.5 py-1 text-xs font-medium text-zinc-700"
-                        >
-                          {action}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </article>
